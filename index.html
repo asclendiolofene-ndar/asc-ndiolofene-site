@@ -65,6 +65,10 @@ footer b{color:#fff}
 .nmeta{color:var(--muted);font-size:.9rem}
 .nitem details summary{cursor:pointer;font-weight:600;color:var(--green);margin-top:.6rem}
 .nbody{white-space:pre-line;margin-top:.6rem;max-width:70ch}
+
+.band .box{color:var(--ink);margin-bottom:.8rem}
+.band h3{color:var(--lime)}
+.mline{font:800 1.15rem "Bricolage Grotesque",system-ui,sans-serif;margin:.4rem 0}
 </style>
 </head>
 <body>
@@ -113,11 +117,7 @@ footer b{color:#fff}
 
   <div class="band"><section id="football">
     <h2>Football</h2>
-    <div class="box" style="color:var(--ink)">
-      <span class="tag">Exemple à remplacer</span>
-      <div class="match"><div>ASC Le Ndiolofène<small>Prochain match</small></div><div>vs</div><div style="text-align:right">Adversaire<small>Date et lieu à venir</small></div></div>
-    </div>
-    <p>Effectif, calendrier, résultats et classements seront gérés depuis l’espace d’administration.</p>
+    <div id="fb"><div class="box">Chargement des matchs…</div></div>
   </section></div>
 
   <section id="actualites">
@@ -182,6 +182,38 @@ try{
     (n.excerpt?'<p>'+esc(n.excerpt)+'</p>':'')+
     '<details><summary>Lire la suite</summary><div class="nbody">'+esc(n.body)+'</div></details></article>';
   }).join('');
+ },fail);
+}catch(e){fail()}
+})();
+</script>
+<script>
+(function(){
+var el=document.getElementById('fb'); if(!el) return;
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function fail(){el.innerHTML='<div class="box">Les matchs ne peuvent pas être chargés pour le moment. Réessayez dans quelques instants.</div>'}
+function line(m){
+ var a='ASC Le Ndiolofène',o=esc(m.opponent),has=m.score_for!=null&&m.score_against!=null;
+ if(m.is_home) return has? a+' <b>'+m.score_for+' – '+m.score_against+'</b> '+o : a+' vs '+o;
+ return has? o+' <b>'+m.score_against+' – '+m.score_for+'</b> '+a : o+' vs '+a;
+}
+function when(m){return new Date(m.played_at).toLocaleString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'})}
+function card(m,withReport){
+ var meta=[when(m)]; if(m.venue) meta.push(esc(m.venue)); meta.push(m.is_home?'Domicile':'Extérieur');
+ return '<div class="box"><span class="tag">'+esc(m.competition)+'</span><div class="mline">'+line(m)+'</div><div class="nmeta">'+meta.join(' · ')+'</div>'+
+  (withReport&&m.report?'<details><summary style="cursor:pointer;font-weight:600;color:var(--green);margin-top:.5rem">Compte rendu</summary><div class="nbody">'+esc(m.report)+'</div></details>':'')+'</div>';
+}
+try{
+ var sb=window.__sb||(window.__sb=supabase.createClient('https://rwhkvhkkrqblncmltcqa.supabase.co','sb_publishable_oIQTsNRlg9SwnwLIbPiHAA_WO6fmel3'));
+ var now=new Date().toISOString(),cols='id,competition,opponent,played_at,venue,is_home,score_for,score_against,report';
+ Promise.all([
+  sb.from('matches').select(cols).eq('published',true).gte('played_at',now).order('played_at',{ascending:true}).limit(3),
+  sb.from('matches').select(cols).eq('published',true).lt('played_at',now).not('score_for','is',null).not('score_against','is',null).order('played_at',{ascending:false}).limit(5)
+ ]).then(function(r){
+  if(r[0].error||r[1].error){fail();return}
+  var up=r[0].data,done=r[1].data;
+  var h='<h3 style="margin-top:0">Prochains matchs</h3>'+(up.length?up.map(function(m){return card(m,false)}).join(''):'<div class="box">Aucun match programmé pour le moment.</div>');
+  h+='<h3 style="margin-top:1.4rem">Derniers résultats</h3>'+(done.length?done.map(function(m){return card(m,true)}).join(''):'<div class="box">Aucun résultat publié pour le moment.</div>');
+  el.innerHTML=h;
  },fail);
 }catch(e){fail()}
 })();
