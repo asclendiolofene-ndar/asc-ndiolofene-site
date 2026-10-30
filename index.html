@@ -78,6 +78,7 @@ footer b{color:#fff}
   <nav id="nav" aria-label="Navigation principale"><ul id="nav-list">
     <li><a href="#asc">L’association</a></li>
     <li><a href="#football">Football</a></li>
+    <li><a href="#culture">Culture</a></li>
     <li><a href="#actualites">Actualités</a></li>
     <li><a href="#contact">Contact</a></li>
   </ul></nav>
@@ -95,6 +96,7 @@ footer b{color:#fff}
   <section id="asc">
     <h2>L’association</h2>
     <p>Depuis les années 1970, l’Association sportive et culturelle Le Ndiolofène réunit les habitants du quartier autour du sport et de la culture. Son existence légale a été renouvelée à Saint-Louis par récépissé du 17 février 2026.</p>
+    <div id="histo"></div>
     <div class="cols">
       <div>
         <h3>Nos objets</h3>
@@ -119,6 +121,12 @@ footer b{color:#fff}
     <h2>Football</h2>
     <div id="fb"><div class="box">Chargement des matchs…</div></div>
   </section></div>
+
+  <section id="culture">
+    <h2>Culture et théâtre</h2>
+    <p id="cult-intro" style="color:var(--muted);max-width:65ch"></p>
+    <div id="cult" aria-live="polite"><div class="empty">Chargement…</div></div>
+  </section>
 
   <section id="actualites">
     <h2>Actualités</h2>
@@ -216,6 +224,33 @@ try{
   el.innerHTML=h;
  },fail);
 }catch(e){fail()}
+})();
+</script>
+<script>
+(function(){
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+var ci=document.getElementById('cult-intro'),cl=document.getElementById('cult'),hi=document.getElementById('histo');
+ci.textContent='Au-delà du football, l’ASC Le Ndiolofène anime la vie culturelle du quartier : théâtre, expression artistique, manifestations communautaires et projets de jeunesse.';
+try{
+ var sb=window.__sb||(window.__sb=supabase.createClient('https://rwhkvhkkrqblncmltcqa.supabase.co','sb_publishable_oIQTsNRlg9SwnwLIbPiHAA_WO6fmel3'));
+ sb.from('site_settings').select('key,value').in('key',['historique','culture_intro']).then(function(r){
+  if(r.error||!r.data)return;
+  r.data.forEach(function(s){
+   var v=(s.value||'').trim();if(!v)return;
+   if(s.key==='culture_intro')ci.textContent=v;
+   if(s.key==='historique')hi.innerHTML='<h3 style="margin:1.4rem 0 .5rem">Notre histoire</h3><div class="nbody">'+esc(v)+'</div>';
+  });
+ },function(){});
+ sb.from('news').select('id,title,excerpt,body,cover_url,published_at').eq('published',true).eq('category','culture').order('published_at',{ascending:false}).limit(6).then(function(r){
+  if(r.error){cl.innerHTML='<div class="empty">Les publications ne peuvent pas être chargées pour le moment.</div>';return}
+  if(!r.data.length){cl.innerHTML='<div class="empty">Aucune publication culturelle pour le moment. Les créations théâtrales, manifestations et projets de jeunesse apparaîtront ici.</div>';return}
+  cl.innerHTML=r.data.map(function(n){
+   var d=n.published_at?new Date(n.published_at).toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'}):'';
+   var img=(n.cover_url&&n.cover_url.indexOf('https://')===0)?'<img src="'+esc(n.cover_url)+'" alt="" loading="lazy">':'';
+   return '<article class="nitem">'+img+'<span class="nmeta">'+esc(d)+'</span><h3>'+esc(n.title)+'</h3>'+(n.excerpt?'<p>'+esc(n.excerpt)+'</p>':'')+'<details><summary>Lire la suite</summary><div class="nbody">'+esc(n.body)+'</div></details></article>';
+  }).join('');
+ },function(){cl.innerHTML='<div class="empty">Les publications ne peuvent pas être chargées pour le moment.</div>'});
+}catch(e){cl.innerHTML='<div class="empty">Les publications ne peuvent pas être chargées pour le moment.</div>'}
 })();
 </script>
 </body>
