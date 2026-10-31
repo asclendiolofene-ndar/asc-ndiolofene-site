@@ -75,6 +75,13 @@ footer b{color:#fff}
 .pl b{display:block;line-height:1.25}
 .pl span{color:var(--muted);font-size:.9rem}
 .band h4{color:#e6f4e0;margin:1.2rem 0 .5rem;font-size:1.05rem}
+select{width:100%;font:inherit;color:var(--ink);background:var(--surface);border:1px solid var(--muted);border-radius:6px;padding:.7rem}
+.ptgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:.9rem}
+.pt{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:1rem;text-align:center}
+.pt img{display:block;max-width:100%;max-height:80px;object-fit:contain;margin:0 auto .6rem}
+.pt b{display:block}
+.pt p{margin:.4rem 0 0;color:var(--muted);font-size:.95rem}
+.pt a{display:inline-block;margin-top:.4rem;color:var(--green);font-weight:600}
 </style>
 </head>
 <body>
@@ -86,6 +93,7 @@ footer b{color:#fff}
     <li><a href="#football">Football</a></li>
     <li><a href="#culture">Culture</a></li>
     <li><a href="#actualites">Actualités</a></li>
+    <li><a href="#partenaires">Partenaires</a></li>
     <li><a href="#contact">Contact</a></li>
   </ul></nav>
 </header>
@@ -141,10 +149,18 @@ footer b{color:#fff}
     <div id="news" aria-live="polite"><div class="empty">Chargement des actualités…</div></div>
   </section>
 
+  <section id="partenaires">
+    <h2>Partenaires et sponsors</h2>
+    <p style="color:var(--muted);max-width:65ch">Ils soutiennent l’ASC Le Ndiolofène. Merci à eux.</p>
+    <div id="pt" aria-live="polite"><div class="empty">Chargement…</div></div>
+    <p style="margin-top:1.2rem"><a class="btn" href="#contact" id="bepart">Devenir partenaire</a></p>
+  </section>
+
   <div class="band"><section id="contact">
     <h2>Contact</h2>
     <p>Siège : quartier Ndiolofène, commune de Saint-Louis.</p>
     <form id="f" novalidate>
+      <label for="kind">Objet de votre message</label><select id="kind"><option value="contact">Poser une question</option><option value="partenariat">Devenir partenaire ou sponsor</option><option value="adhesion">Rejoindre ou soutenir l’association</option></select>
       <label for="n">Votre nom</label><input id="n" autocomplete="name" maxlength="120" required>
       <label for="em">Votre e-mail (facultatif, pour vous répondre)</label><input id="em" type="email" autocomplete="email" maxlength="200">
       <label for="m">Votre message</label><textarea id="m" rows="4" maxlength="3000" required></textarea>
@@ -171,7 +187,7 @@ var bad='Votre message n’a pas pu être envoyé. Réessayez dans quelques inst
 btn.disabled=true;o.textContent='Envoi en cours…';
 try{
  var sb=window.__sb||(window.__sb=supabase.createClient('https://rwhkvhkkrqblncmltcqa.supabase.co','sb_publishable_oIQTsNRlg9SwnwLIbPiHAA_WO6fmel3'));
- sb.from('messages').insert({kind:'contact',name:n,email:em||null,body:m}).then(function(r){
+ sb.from('messages').insert({kind:document.getElementById('kind').value,name:n,email:em||null,body:m}).then(function(r){
   btn.disabled=false;
   if(r.error){o.textContent=bad;return}
   document.getElementById('f').reset();o.textContent='Merci, votre message a bien été envoyé.';
@@ -285,6 +301,26 @@ try{
   var rest=r.data.filter(function(p){return ORD.indexOf(p.position)<0});
   if(rest.length)html+='<h4>Autres</h4><div class="sq">'+rest.map(card).join('')+'</div>';
   el.innerHTML=html;
+ },fail);
+}catch(e){fail()}
+})();
+</script>
+<script>
+(function(){
+var el=document.getElementById('pt');
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+document.getElementById('bepart').addEventListener('click',function(){document.getElementById('kind').value='partenariat'});
+function fail(){el.innerHTML='<div class="empty">Les partenaires ne peuvent pas être chargés pour le moment. Réessayez dans quelques instants.</div>'}
+try{
+ var sb=window.__sb||(window.__sb=supabase.createClient('https://rwhkvhkkrqblncmltcqa.supabase.co','sb_publishable_oIQTsNRlg9SwnwLIbPiHAA_WO6fmel3'));
+ sb.from('partners').select('id,name,logo_url,website,message').eq('published',true).order('sort_order',{ascending:true}).order('name',{ascending:true}).limit(60).then(function(r){
+  if(r.error){fail();return}
+  if(!r.data.length){el.innerHTML='<div class="empty">Les partenaires de l’association seront présentés ici. Vous souhaitez nous soutenir ? Touchez « Devenir partenaire » ci-dessous.</div>';return}
+  el.innerHTML='<div class="ptgrid">'+r.data.map(function(p){
+   var im=(p.logo_url&&p.logo_url.indexOf('https://')===0)?'<img src="'+esc(p.logo_url)+'" alt="Logo de '+esc(p.name)+'" loading="lazy">':'';
+   var lk=(p.website&&/^https?:\/\//.test(p.website))?'<a href="'+esc(p.website)+'" target="_blank" rel="noopener noreferrer">Visiter le site</a>':'';
+   return '<div class="pt">'+im+'<b>'+esc(p.name)+'</b>'+(p.message?'<p>'+esc(p.message)+'</p>':'')+lk+'</div>';
+  }).join('')+'</div>';
  },fail);
 }catch(e){fail()}
 })();
