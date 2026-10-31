@@ -204,7 +204,7 @@ function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){retur
 function fail(){el.innerHTML='<div class="empty">Les actualités ne peuvent pas être chargées pour le moment. Réessayez dans quelques instants.</div>'}
 try{
  var sb=supabase.createClient('https://rwhkvhkkrqblncmltcqa.supabase.co','sb_publishable_oIQTsNRlg9SwnwLIbPiHAA_WO6fmel3');
- sb.from('news').select('id,title,category,excerpt,body,cover_url,published_at').eq('published',true).order('published_at',{ascending:false}).limit(20).then(function(r){
+ sb.from('news').select('id,title,category,excerpt,body,cover_url,published_at').eq('published',true).neq('category','culture').order('published_at',{ascending:false}).limit(20).then(function(r){
   if(r.error){fail();return}
   if(!r.data.length){el.innerHTML='<div class="empty">Aucune actualité publiée pour le moment. Les communiqués et annonces de l’association apparaîtront ici.</div>';return}
   el.innerHTML=r.data.map(function(n){
