@@ -82,6 +82,27 @@ select{width:100%;font:inherit;color:var(--ink);background:var(--surface);border
 .pt b{display:block}
 .pt p{margin:.4rem 0 0;color:var(--muted);font-size:.95rem}
 .pt a{display:inline-block;margin-top:.4rem;color:var(--green);font-weight:600}
+.pdgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:.9rem}
+.pd{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:.9rem;display:flex;flex-direction:column}
+.pd img{display:block;width:100%;height:170px;object-fit:cover;border-radius:4px;margin-bottom:.6rem}
+.pd b{display:block}
+.pd .pr{color:var(--green);font-weight:600;margin:.2rem 0}
+.pd p{margin:.3rem 0 .6rem;color:var(--muted);font-size:.95rem;flex:1}
+.hnyear{margin:1.2rem 0 .5rem;color:var(--green)}
+nav ul{flex-wrap:wrap;gap:.4rem 1.2rem}
+.hn{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:1rem;margin-bottom:.8rem}
+.hn .se{font:800 1.5rem "Bricolage Grotesque",system-ui,sans-serif;color:var(--green)}
+.hn img{display:block;width:100%;max-height:220px;object-fit:cover;border-radius:4px;margin-top:.7rem}
+.hn p{margin:.5rem 0 0}
+.shg{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:.9rem}
+.sh{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:1rem}
+.sh img{display:block;width:100%;height:150px;object-fit:cover;border-radius:4px;margin-bottom:.6rem}
+.sh b{display:block}
+.sh .pr{font-weight:800;color:var(--green);margin:.3rem 0}
+.sh p{margin:.3rem 0;color:var(--muted);font-size:.95rem}
+.sh a.tel{color:var(--green);font-weight:600}
+.sh .btn{margin-top:.5rem}
+.sh .na{display:inline-block;margin-top:.5rem;color:var(--muted);font-weight:600}
 </style>
 </head>
 <body>
@@ -91,9 +112,13 @@ select{width:100%;font:inherit;color:var(--ink);background:var(--surface);border
   <nav id="nav" aria-label="Navigation principale"><ul id="nav-list">
     <li><a href="#asc">L’association</a></li>
     <li><a href="#football">Football</a></li>
+    
     <li><a href="#culture">Culture</a></li>
     <li><a href="#actualites">Actualités</a></li>
+    
     <li><a href="#partenaires">Partenaires</a></li>
+    <li><a href="#palmares">Palmarès</a></li>
+    <li><a href="#boutiques">Boutiques</a></li>
     <li><a href="#contact">Contact</a></li>
   </ul></nav>
 </header>
@@ -138,6 +163,14 @@ select{width:100%;font:inherit;color:var(--ink);background:var(--surface);border
     <div id="squad" aria-live="polite"><div class="box">Chargement de l’effectif…</div></div>
   </section></div>
 
+  
+
+  <section id="palmares">
+    <h2>Palmarès</h2>
+    <p style="color:var(--muted);max-width:65ch">Les titres et les parcours de l’ASC Le Ndiolofène.</p>
+    <div id="hn" aria-live="polite"><div class="empty">Chargement…</div></div>
+  </section>
+
   <section id="culture">
     <h2>Culture et théâtre</h2>
     <p id="cult-intro" style="color:var(--muted);max-width:65ch"></p>
@@ -147,6 +180,16 @@ select{width:100%;font:inherit;color:var(--ink);background:var(--surface);border
   <section id="actualites">
     <h2>Actualités</h2>
     <div id="news" aria-live="polite"><div class="empty">Chargement des actualités…</div></div>
+  </section>
+
+  
+
+  <section id="boutiques">
+    <h2>Boutiques</h2>
+    <h3>La boutique de l’ASC</h3>
+    <div id="shA" aria-live="polite"><div class="empty">Chargement…</div></div>
+    <h3>Les commerces du quartier</h3>
+    <div id="shC" aria-live="polite"><div class="empty">Chargement…</div></div>
   </section>
 
   <section id="partenaires">
@@ -160,7 +203,7 @@ select{width:100%;font:inherit;color:var(--ink);background:var(--surface);border
     <h2>Contact</h2>
     <p>Siège : quartier Ndiolofène, commune de Saint-Louis.</p>
     <form id="f" novalidate>
-      <label for="kind">Objet de votre message</label><select id="kind"><option value="contact">Poser une question</option><option value="partenariat">Devenir partenaire ou sponsor</option><option value="adhesion">Rejoindre ou soutenir l’association</option></select>
+      <label for="kind">Objet de votre message</label><select id="kind"><option value="contact">Poser une question</option><option value="partenariat">Devenir partenaire ou sponsor</option><option value="adhesion">Rejoindre ou soutenir l’association</option><option value="commande">Commander un article de la boutique</option></select>
       <label for="n">Votre nom</label><input id="n" autocomplete="name" maxlength="120" required>
       <label for="em">Votre e-mail (facultatif, pour vous répondre)</label><input id="em" type="email" autocomplete="email" maxlength="200">
       <label for="m">Votre message</label><textarea id="m" rows="4" maxlength="3000" required></textarea>
@@ -323,6 +366,39 @@ try{
   }).join('')+'</div>';
  },fail);
 }catch(e){fail()}
+})();
+</script>
+
+<script>
+(function(){
+var hn=document.getElementById('hn'),sa=document.getElementById('shA'),sc=document.getElementById('shC');
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function img(u,alt){return (u&&u.indexOf('https://')===0)?'<img src="'+esc(u)+'" alt="'+esc(alt||'')+'" loading="lazy">':''}
+function fail(el,t){el.innerHTML='<div class="empty">'+t+' ne peut pas être chargé pour le moment. Réessayez dans quelques instants.</div>'}
+try{
+ var sb=window.__sb||(window.__sb=supabase.createClient('https://rwhkvhkkrqblncmltcqa.supabase.co','sb_publishable_oIQTsNRlg9SwnwLIbPiHAA_WO6fmel3'));
+ sb.from('honours').select('id,season,competition,result,notes,photo_url').eq('published',true).order('season',{ascending:false}).limit(100).then(function(r){
+  if(r.error){fail(hn,'Le palmarès');return}
+  if(!r.data.length){hn.innerHTML='<div class="empty">Le palmarès de l’association sera présenté ici prochainement.</div>';return}
+  hn.innerHTML=r.data.map(function(x){return '<div class="hn"><div class="se">'+esc(x.season)+'</div><b>'+esc(x.competition)+'</b> <span class="tag">'+esc(x.result)+'</span>'+(x.notes?'<p>'+esc(x.notes)+'</p>':'')+img(x.photo_url,'')+'</div>'}).join('');
+ },function(){fail(hn,'Le palmarès')});
+ sb.from('shop_entries').select('id,kind,name,description,price_fcfa,address,phone,photo_url,available').eq('published',true).order('sort_order',{ascending:true}).order('name',{ascending:true}).limit(100).then(function(r){
+  if(r.error){fail(sa,'La boutique');fail(sc,'La liste des commerces');return}
+  var A=r.data.filter(function(s){return s.kind==='article'}),C=r.data.filter(function(s){return s.kind==='commerce'});
+  sa.innerHTML=A.length?'<div class="shg">'+A.map(function(s){
+   var pr=s.price_fcfa!=null?'<div class="pr">'+Number(s.price_fcfa).toLocaleString('fr-FR')+' FCFA</div>':'';
+   var act=s.available?'<a class="btn cmd" href="#contact" data-name="'+esc(s.name)+'">Commander</a>':'<span class="na">Indisponible pour le moment</span>';
+   return '<div class="sh">'+img(s.photo_url,s.name)+'<b>'+esc(s.name)+'</b>'+pr+(s.description?'<p>'+esc(s.description)+'</p>':'')+act+'</div>'}).join('')+'</div>':'<div class="empty">Les articles de l’ASC (maillots, écharpes…) seront présentés ici prochainement.</div>';
+  sc.innerHTML=C.length?'<div class="shg">'+C.map(function(s){
+   var tel=(s.phone&&/^[0-9+ ().-]{6,30}$/.test(s.phone))?'<p><a class="tel" href="tel:'+esc(s.phone.replace(/[^0-9+]/g,''))+'">'+esc(s.phone)+'</a></p>':'';
+   return '<div class="sh">'+img(s.photo_url,s.name)+'<b>'+esc(s.name)+'</b>'+(s.description?'<p>'+esc(s.description)+'</p>':'')+(s.address?'<p>'+esc(s.address)+'</p>':'')+tel+'</div>'}).join('')+'</div>':'<div class="empty">Les commerces du quartier seront présentés ici prochainement.</div>';
+ },function(){fail(sa,'La boutique');fail(sc,'La liste des commerces')});
+ document.getElementById('boutiques').addEventListener('click',function(e){
+  var a=e.target.closest('a.cmd');if(!a)return;
+  document.getElementById('kind').value='contact';
+  document.getElementById('m').value='Bonjour, je souhaite commander : '+a.getAttribute('data-name')+'.';
+ });
+}catch(e){fail(hn,'Le palmarès');fail(sa,'La boutique');fail(sc,'La liste des commerces')}
 })();
 </script>
 </body>
