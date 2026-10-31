@@ -69,6 +69,12 @@ footer b{color:#fff}
 .band .box{color:var(--ink);margin-bottom:.8rem}
 .band h3{color:var(--lime)}
 .mline{font:800 1.15rem "Bricolage Grotesque",system-ui,sans-serif;margin:.4rem 0}
+.sq{display:grid;grid-template-columns:repeat(auto-fill,minmax(145px,1fr));gap:.8rem}
+.pl{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:.9rem .6rem;text-align:center;color:var(--ink)}
+.pl img,.pl .ph{width:84px;height:84px;border-radius:50%;object-fit:cover;margin:0 auto .5rem;display:flex;align-items:center;justify-content:center;background:var(--line);font:800 1.4rem "Bricolage Grotesque",system-ui,sans-serif;color:var(--muted)}
+.pl b{display:block;line-height:1.25}
+.pl span{color:var(--muted);font-size:.9rem}
+.band h4{color:#e6f4e0;margin:1.2rem 0 .5rem;font-size:1.05rem}
 </style>
 </head>
 <body>
@@ -120,6 +126,8 @@ footer b{color:#fff}
   <div class="band"><section id="football">
     <h2>Football</h2>
     <div id="fb"><div class="box">Chargement des matchs…</div></div>
+    <h3>Effectif</h3>
+    <div id="squad" aria-live="polite"><div class="box">Chargement de l’effectif…</div></div>
   </section></div>
 
   <section id="culture">
@@ -251,6 +259,34 @@ try{
   }).join('');
  },function(){cl.innerHTML='<div class="empty">Les publications ne peuvent pas être chargées pour le moment.</div>'});
 }catch(e){cl.innerHTML='<div class="empty">Les publications ne peuvent pas être chargées pour le moment.</div>'}
+})();
+</script>
+<script>
+(function(){
+var el=document.getElementById('squad');
+var LAB={gardien:'Gardiens',defenseur:'Défenseurs',milieu:'Milieux',attaquant:'Attaquants',entraineur:'Entraîneurs',encadreur:'Encadrement'};
+var ORD=['gardien','defenseur','milieu','attaquant','entraineur','encadreur'];
+var POSL={gardien:'Gardien',defenseur:'Défenseur',milieu:'Milieu',attaquant:'Attaquant',entraineur:'Entraîneur',encadreur:'Encadrement'};
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function ini(n){return n.split(/\s+/).filter(Boolean).slice(0,2).map(function(w){return w.charAt(0).toUpperCase()}).join('')}
+function card(p){var im=(p.photo_url&&p.photo_url.indexOf('https://')===0)?'<img src="'+esc(p.photo_url)+'" alt="" loading="lazy">':'<div class="ph" aria-hidden="true">'+esc(ini(p.full_name))+'</div>';
+ return '<div class="pl">'+im+'<b>'+esc(p.full_name)+'</b><span>'+(p.shirt_number?'n° '+p.shirt_number+' · ':'')+esc(POSL[p.position]||'')+'</span></div>'}
+function fail(){el.innerHTML='<div class="box">L’effectif ne peut pas être chargé pour le moment. Réessayez dans quelques instants.</div>'}
+try{
+ var sb=window.__sb||(window.__sb=supabase.createClient('https://rwhkvhkkrqblncmltcqa.supabase.co','sb_publishable_oIQTsNRlg9SwnwLIbPiHAA_WO6fmel3'));
+ sb.from('players').select('id,full_name,position,shirt_number,photo_url').eq('active',true).limit(200).then(function(r){
+  if(r.error){fail();return}
+  if(!r.data.length){el.innerHTML='<div class="box">L’effectif sera présenté prochainement.</div>';return}
+  var html='';
+  ORD.forEach(function(k){
+   var g=r.data.filter(function(p){return p.position===k}).sort(function(a,b){return (a.shirt_number||999)-(b.shirt_number||999)||a.full_name.localeCompare(b.full_name)});
+   if(g.length)html+='<h4>'+LAB[k]+'</h4><div class="sq">'+g.map(card).join('')+'</div>';
+  });
+  var rest=r.data.filter(function(p){return ORD.indexOf(p.position)<0});
+  if(rest.length)html+='<h4>Autres</h4><div class="sq">'+rest.map(card).join('')+'</div>';
+  el.innerHTML=html;
+ },fail);
+}catch(e){fail()}
 })();
 </script>
 </body>
