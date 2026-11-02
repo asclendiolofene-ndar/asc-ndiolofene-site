@@ -103,6 +103,12 @@ nav ul{flex-wrap:wrap;gap:.4rem 1.2rem}
 .sh a.tel{color:var(--green);font-weight:600}
 .sh .btn{margin-top:.5rem}
 .sh .na{display:inline-block;margin-top:.5rem;color:var(--muted);font-weight:600}
+.soc a{display:inline-block;margin:.3rem .5rem .3rem 0;padding:.55rem 1.1rem;border:2px solid #fff;border-radius:999px;color:#fff;text-decoration:none;font-weight:600}
+.soc a:hover,.soc a:focus-visible{background:var(--lime);border-color:var(--lime);color:#0b2a14}
+.soc .lbl{display:block;margin-top:.8rem;font-weight:600}
+.soc{display:flex;flex-wrap:wrap;gap:.6rem;margin:.4rem 0 1.4rem}
+.soc a{display:inline-block;color:#fff;text-decoration:none;font-weight:600;border:2px solid #fff;border-radius:999px;padding:.55rem 1.1rem}
+.soc a:hover,.soc a:focus-visible{background:var(--lime);border-color:var(--lime);color:#0b2a14}
 </style>
 </head>
 <body>
@@ -202,6 +208,7 @@ nav ul{flex-wrap:wrap;gap:.4rem 1.2rem}
   <div class="band"><section id="contact">
     <h2>Contact</h2>
     <p>Siège : quartier Ndiolofène, commune de Saint-Louis.</p>
+    <div id="soc" class="soc" role="group" aria-label="Pages officielles de l’ASC"></div>
     <form id="f" novalidate>
       <label for="kind">Objet de votre message</label><select id="kind"><option value="contact">Poser une question</option><option value="partenariat">Devenir partenaire ou sponsor</option><option value="adhesion">Rejoindre ou soutenir l’association</option><option value="commande">Commander un article de la boutique</option></select>
       <label for="n">Votre nom</label><input id="n" autocomplete="name" maxlength="120" required>
@@ -399,6 +406,27 @@ try{
   document.getElementById('m').value='Bonjour, je souhaite commander : '+a.getAttribute('data-name')+'.';
  });
 }catch(e){fail(hn,'Le palmarès');fail(sa,'La boutique');fail(sc,'La liste des commerces')}
+})();
+</script>
+<script>
+(function(){
+var el=document.getElementById('soc');
+function esc(x){return String(x==null?'':x).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+try{
+ var sb=window.__sb||(window.__sb=supabase.createClient('https://rwhkvhkkrqblncmltcqa.supabase.co','sb_publishable_oIQTsNRlg9SwnwLIbPiHAA_WO6fmel3'));
+ sb.from('site_settings').select('key,value').in('key',['facebook','instagram','tiktok','youtube','whatsapp']).then(function(r){
+  if(r.error||!r.data)return;
+  var v={};r.data.forEach(function(x){v[x.key]=(x.value||'').trim()});
+  var out='';
+  function add(label,href){out+='<a href="'+esc(href)+'" target="_blank" rel="noopener noreferrer">'+label+'</a>'}
+  if(/^https:\/\/[^\s]+$/.test(v.facebook||''))add('Facebook',v.facebook);
+  if(/^https:\/\/[^\s]+$/.test(v.instagram||''))add('Instagram',v.instagram);
+  if(/^https:\/\/[^\s]+$/.test(v.tiktok||''))add('TikTok',v.tiktok);
+  if(/^https:\/\/[^\s]+$/.test(v.youtube||''))add('YouTube',v.youtube);
+  if(/^https:\/\/[^\s]+$/.test(v.whatsapp||''))add('WhatsApp',v.whatsapp);else if(/^[0-9]{8,15}$/.test(v.whatsapp||''))add('WhatsApp','https://wa.me/'+v.whatsapp);
+  if(out)el.innerHTML='<span class="lbl">Nos pages officielles</span>'+out;
+ },function(){});
+}catch(e){}
 })();
 </script>
 </body>
